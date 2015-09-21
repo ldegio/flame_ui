@@ -85,6 +85,8 @@ function svInit()
 
 	tdata = createSubTree(AvgData, svLastTransaction);
 
+	d3.select('#svChartTitle').html('<h2> ' + svLastTransaction + ' Avg</h2>');
+		
 	svFlameGraph = new FlameGraph(d3.select('#chart'), tdata,
 	    svSvgWidth, svSvgHeight, svContext, {
 	        'coloring': svColorMode,
@@ -190,8 +192,14 @@ function svRenderTrList(tree)
 	var content = "<b>Transactions</b>:";
 
 	for (node in tree[""].ch) {
-		content += '<a href="javascript:svSwitchData(\'' + node + '\', \'avg\')">' + node + '</a> ';
-		res = node;
+		content += '<br>&nbsp;&nbsp;<b>' + node + '</b> - ' + 
+			tree[""].ch[node].n + ' calls -' + 
+			' <a href="javascript:svSwitchData(\'' + node + '\', \'avg\')">Avg Time</a>: ' + fmtTimeInterval(AvgData[""].ch[node].tt, 3, 1).output +
+			' <a href="javascript:svSwitchData(\'' + node + '\', \'min\')">Min Time</a>: ' + fmtTimeInterval(MinData[""].ch[node].tt, 3, 1).output +
+			' <a href="javascript:svSwitchData(\'' + node + '\', \'max\')">Max Time</a>: ' + fmtTimeInterval(MaxData[""].ch[node].tt, 3, 1).output;
+		if (!res) {
+			res = node;
+		}
 	}
 
 	svTrList.html(content);
@@ -202,15 +210,17 @@ function svSwitchData(trName, which)
 {
 //	delete svFlameGraph;
 	var data = AvgData;
+	var opStr;
 	
 	if (which == "max") {
 		data = MaxData;
-		d3.select('#svChartTitle').html("<h2>Slowest Transaction</h2>");
+		opStr = "Max";
 	} else if (which == "min") {
 		data = MinData;
-		d3.select('#svChartTitle').html("<h2>Fastest Transaction</h2>");
+		opStr = "Min";
 	} else {
-		d3.select('#svChartTitle').html("<h2>Transaction Average</h2>");
+		data = AvgData;
+		opStr = "Avg";
 	}
 	
 	d3.select('#chart').html("");
@@ -220,11 +230,13 @@ function svSwitchData(trName, which)
 	svFillData(data);
 	
 	if (trName === '') {
-		trName = lastTransaction;
+		trName = svLastTransaction;
 	} else {
-		lastTransaction = trName;
+		svLastTransaction = trName;
 	}
 	
+	d3.select('#svChartTitle').html('<h2> ' + trName + ' ' + opStr + '</h2>');
+		
 	tdata = createSubTree(data, trName);
 	
 	svFlameGraph = new FlameGraph(d3.select('#chart'), tdata,
