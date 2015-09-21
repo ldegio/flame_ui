@@ -15,11 +15,15 @@
   </head>
   <body>
     <h1>Sysdig Transaction Flame</h1>
+    <div id="svTrList">
+      Transactions:
+    </div>
+	<br>
     <div id="info">
-      View: <a href="javascript:svSwitchData('avg')">Transaction Average</a> <a href="javascript:svSwitchData('max')">Slowest Transaction</a> <a href="javascript:svSwitchData('min')">Fastest Transaction</a>
+      <b>View</b>: <a href="javascript:svSwitchData('', 'avg')">Average</a> <a href="javascript:svSwitchData('', 'max')">Slowest</a> <a href="javascript:svSwitchData('', 'min')">Fastest</a>
       <div class="svTooltip" id="svTooltip"></div>
     </div>
-    <div id="svChartTitle"><h1>Transaction Average</h1></div>
+    <div id="svChartTitle"><h2>Transaction Average</h2></div>
     <div id="chart">
       <div style="position: relative">
       <div class="svPopout" id="svPopout">
@@ -27,5 +31,7 @@
       </div>
     </div>
     <div id="svDetails"> </div>
+    <div id="svLegend"> </div>
+    <div id="svLogs"> </div>
   </body>
 </html>

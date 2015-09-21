@@ -26,6 +26,7 @@ var svPopoutBox;		/* popout detail box (D3 selection) */
 var svFlameGraph;		/* main flame graph object */
 var svDetails;
 var svLegend;
+var svLastTransaction;
 var svContext = {
 	'detailClose': svDetailClose,
 	'detailOpen': svDetailOpen,
@@ -48,6 +49,10 @@ var svContext = {
 		    fmtTimeInterval(d.data.value.tt, 3, 1).output + ' ';
 		text += '<strong>Time in this node</strong>: ' +
 		    fmtTimeInterval(d.data.value.t, 3, 1).output;
+		var nconc = d.data.value.nconc;
+		if (nconc) {
+			text += '<br><strong>NOTE: this node has ' + nconc + ' childs. Only the slowest one is shown.</strong>';
+		}
 
 		svDetails.html(text);
 	}
@@ -55,17 +60,32 @@ var svContext = {
 
 window.onload = svInit;
 
+function createSubTree(fullTree, trName) {
+	var res = {};
+	res[""] = {};
+	res[""].ch = {};
+	res[""].ch[trName] = fullTree[""].ch[trName];
+	
+	return res;
+}
+
 function svInit()
 {
 	svTooltipBox = d3.select('#svTooltip');
 	svPopoutBox = d3.select('#svPopout');
 	svDetails = d3.select('#svDetails');
 	svLegend = d3.select('#svLegend');
+	svTrList = d3.select('#svTrList');
 	
 	var detText = svDetails.html();
-
+	
 	svFillData(AvgData);
-	svFlameGraph = new FlameGraph(d3.select('#chart'), AvgData,
+	
+	svLastTransaction = svRenderTrList(AvgData);
+
+	tdata = createSubTree(AvgData, svLastTransaction);
+
+	svFlameGraph = new FlameGraph(d3.select('#chart'), tdata,
 	    svSvgWidth, svSvgHeight, svContext, {
 	        'coloring': svColorMode,
 		'growDown': svGrowDown,
@@ -159,23 +179,38 @@ function svRenderLegend()
 {
 	for (cName in cNames) {
 		var tText = svLegend.html();
-		svLegend.html(tText + 'O' + ' ' + cName + '<br>');
+		var col = svColorMono(cName);
+		svLegend.html(tText + '<text style="color:' + col + '">O' + ' ' + cName + '</text><br>');
 	}	
 }
 
-function svSwitchData(which)
+function svRenderTrList(tree)
+{
+	var res;
+	var content = "<b>Transactions</b>:";
+
+	for (node in tree[""].ch) {
+		content += '<a href="javascript:svSwitchData(\'' + node + '\', \'avg\')">' + node + '</a> ';
+		res = node;
+	}
+
+	svTrList.html(content);
+	return res;
+}
+
+function svSwitchData(trName, which)
 {
 //	delete svFlameGraph;
 	var data = AvgData;
 	
 	if (which == "max") {
 		data = MaxData;
-		d3.select('#svChartTitle').html("<h1>Slowest Transaction</h1>");
+		d3.select('#svChartTitle').html("<h2>Slowest Transaction</h2>");
 	} else if (which == "min") {
 		data = MinData;
-		d3.select('#svChartTitle').html("<h1>Fastest Transaction</h1>");
+		d3.select('#svChartTitle').html("<h2>Fastest Transaction</h2>");
 	} else {
-		d3.select('#svChartTitle').html("<h1>Transaction Average</h1>");
+		d3.select('#svChartTitle').html("<h2>Transaction Average</h2>");
 	}
 	
 	d3.select('#chart').html("");
@@ -183,7 +218,16 @@ function svSwitchData(which)
 	svDetails.html(" ");
 	
 	svFillData(data);
-	svFlameGraph = new FlameGraph(d3.select('#chart'), data,
+	
+	if (trName === '') {
+		trName = lastTransaction;
+	} else {
+		lastTransaction = trName;
+	}
+	
+	tdata = createSubTree(data, trName);
+	
+	svFlameGraph = new FlameGraph(d3.select('#chart'), tdata,
 	    svSvgWidth, svSvgHeight, svContext, {
 	        'coloring': svColorMode,
 		'growDown': svGrowDown,
@@ -258,6 +302,16 @@ function svDetailOpen(d)
 		svPopoutBox.style('opacity', 1);
 	} else {
 		svFlameGraph.zoomSet(d);
+	}
+}
+
+function svCreateBarLabel(d) {
+	var nconc = d.data.value.nconc;
+	
+	if (nconc) {
+		return d.data.key + ' (' + nconc + ')';
+	} else {
+		return d.data.key;
 	}
 }
 
@@ -389,7 +443,7 @@ function FlameGraph(node, rawdata, pwidth, pheight, context, options)
 	    on('click', this.detailOpen.bind(this)).
 	    on('mouseover', this.mouseover.bind(this)).
 	    on('mouseout', this.mouseout.bind(this)).
-	    text(function (d) { return (d.data.key); });
+	    text(function (d) { return svCreateBarLabel(d); });
 
 	if (options.axisLabels) {
 		axis = this.fg_svg.append('text');
