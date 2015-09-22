@@ -37,10 +37,7 @@ var svContext = {
 		var text, left, top;
 
 		/* escape the key */
-		svDetails.text(det['label']);
-		text = svDetails.html();
-
-		text = '<strong>' + text + ') </strong>';
+		text = '<strong>' + det['label'] + ') </strong>';
 		text += '<strong>Container Name</strong>: ' +
 		    d.data.value.cont + ' ';
 		text += '<strong>Command Line</strong>: ' +
@@ -179,11 +176,14 @@ function svDetailClose()
 
 function svRenderLegend()
 {
+	var content = "<b>Legend</b>:";
+
 	for (cName in cNames) {
-		var tText = svLegend.html();
 		var col = svColorMono(cName);
-		svLegend.html(tText + '<text style="color:' + col + '">O' + ' ' + cName + '</text><br>');
+		content += '<br><text style="color:' + col + '">' + ' ' + cName + '</text>';
 	}	
+
+	svLegend.html(content);
 }
 
 function svRenderTrList(tree)
