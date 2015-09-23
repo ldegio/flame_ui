@@ -26,6 +26,7 @@ var svPopoutBox;		/* popout detail box (D3 selection) */
 var svFlameGraph;		/* main flame graph object */
 var svDetails;
 var svLegend;
+var svLogs;
 var svLastTransaction;
 var svContext = {
 	'detailClose': svDetailClose,
@@ -35,9 +36,10 @@ var svContext = {
 	},
 	'mouseover': function (d, det) {
 		var text, left, top;
+		var span_name = det['label'];
 
 		/* escape the key */
-		text = '<strong>' + det['label'] + ') </strong>';
+		text = '<strong>' + span_name + ') </strong>';
 		text += '<strong>Container Name</strong>: ' +
 		    d.data.value.cont + ' ';
 		text += '<strong>Command Line</strong>: ' +
@@ -52,6 +54,11 @@ var svContext = {
 		}
 
 		svDetails.html(text);
+		
+		//
+		// Render the logs for this span
+		//
+		svRenderLogs(span_name, d);
 	}
 };
 
@@ -72,6 +79,7 @@ function svInit()
 	svPopoutBox = d3.select('#svPopout');
 	svDetails = d3.select('#svDetails');
 	svLegend = d3.select('#svLegend');
+	svLogs = d3.select('#svLogs');
 	svTrList = d3.select('#svTrList');
 	
 	var detText = svDetails.html();
@@ -176,7 +184,7 @@ function svDetailClose()
 
 function svRenderLegend()
 {
-	var content = "<b>Legend</b>:";
+	var content = "<b>Container Colors</b>:";
 
 	for (cName in cNames) {
 		var col = svColorMono(cName);
@@ -184,6 +192,18 @@ function svRenderLegend()
 	}	
 
 	svLegend.html(content);
+}
+
+function svRenderLogs(span_name, d)
+{
+	var content = '<b>Logs for span ' + span_name + '</b>:';
+
+	for (var j = 0; j < d.data.value.logs.length; j++) {
+		var col = '#ff0000';
+		content += '<br><text style="color:' + col + '">' + ' ' + d.data.value.logs[j] + '</text>';
+	}	
+
+	svLogs.html(content);
 }
 
 function svRenderTrList(tree)
