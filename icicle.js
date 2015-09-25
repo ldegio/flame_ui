@@ -198,10 +198,12 @@ function svRenderLogs(span_name, d)
 {
 	var content = '<b>Logs for span ' + span_name + '</b>:';
 
-	for (var j = 0; j < d.data.value.logs.length; j++) {
-		var col = '#ff0000';
-		content += '<br><text style="color:' + col + '">' + ' ' + d.data.value.logs[j] + '</text>';
-	}	
+	if (d.data.value.logs) {
+		for (var j = 0; j < d.data.value.logs.length; j++) {
+			var col = '#ff0000';
+			content += '<br><text style="color:' + col + '">' + ' ' + d.data.value.logs[j] + '</text>';
+		}
+	}
 
 	svLogs.html(content);
 }

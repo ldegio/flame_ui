@@ -9,6 +9,8 @@ AvgData = {
             "t":478704,
             "exe":"python /src/us.py",
             "cont":"srvc_node1",
+            "tt":709904,
+            "c":1,
             "ch":{
               "srvc_node6":{
                 "t":231200,
@@ -19,10 +21,7 @@ AvgData = {
                 "c":1,
                 "logs":["received connection."]
               }
-            },
-            "tt":709904,
-            "c":1,
-            "logs":["***","transaction start.","sent:1:srvc_node1.req0."]
+            }
           }
         },
         "n":1,
@@ -31,7 +30,7 @@ AvgData = {
         "id":1,
         "cont":"srvc_node1",
         "tt":2312535,
-        "logs":["***","transaction start.","sent:1:srvc_node1.req0."]
+        "logs":["***","transaction start."]
       }
     },
     "tt":0
@@ -60,8 +59,7 @@ MinData = {
               }
             },
             "c":1,
-            "tt":709904,
-            "logs":["***","transaction start.","sent:1:srvc_node1.req0."]
+            "tt":709904
           }
         },
         "n":1,
@@ -70,7 +68,7 @@ MinData = {
         "id":1,
         "cont":"srvc_node1",
         "tt":2312535,
-        "logs":["***","transaction start.","sent:1:srvc_node1.req0."]
+        "logs":["***","transaction start."]
       }
     },
     "tt":0
@@ -99,8 +97,7 @@ MaxData = {
               }
             },
             "c":1,
-            "tt":709904,
-            "logs":["***","transaction start.","sent:1:srvc_node1.req0."]
+            "tt":709904
           }
         },
         "n":1,
@@ -109,7 +106,7 @@ MaxData = {
         "id":1,
         "cont":"srvc_node1",
         "tt":2312535,
-        "logs":["***","transaction start.","sent:1:srvc_node1.req0."]
+        "logs":["***","transaction start."]
       }
     },
     "tt":0
