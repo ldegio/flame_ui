@@ -200,7 +200,17 @@ function svRenderLogs(span_name, d)
 
 	if (d.data.value.logs) {
 		for (var j = 0; j < d.data.value.logs.length; j++) {
-			var col = '#ff0000';
+			var logLine = d.data.value.logs[j].toLowerCase();
+			var col;
+			
+			if (logLine.indexOf("err") > -1) {
+				col = '#ff0000';
+			} else if (logLine.indexOf("warn") > -1) {
+				col = '#ff8800';
+			} else {
+				col = '#000000';
+			}
+			
 			content += '<br><text style="color:' + col + '">' + ' ' + d.data.value.logs[j] + '</text>';
 		}
 	}
