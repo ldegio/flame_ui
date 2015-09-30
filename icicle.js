@@ -28,6 +28,8 @@ var svDetails;
 var svLegend;
 var svLogs;
 var svLastTransaction;
+var svShowChildLogs = false;
+var svLastLogsNode;
 var svContext = {
 	'detailClose': svDetailClose,
 	'detailOpen': svDetailOpen,
@@ -54,11 +56,6 @@ var svContext = {
 		}
 
 		svDetails.html(text);
-		
-		//
-		// Render the logs for this span
-		//
-		svRenderLogs(span_name, d);
 	}
 };
 
@@ -192,30 +189,6 @@ function svRenderLegend()
 	}	
 
 	svLegend.html(content);
-}
-
-function svRenderLogs(span_name, d)
-{
-	var content = '<b>Logs for span ' + span_name + '</b>:';
-
-	if (d.data.value.logs) {
-		for (var j = 0; j < d.data.value.logs.length; j++) {
-			var logLine = d.data.value.logs[j].toLowerCase();
-			var col;
-			
-			if (logLine.indexOf("err") > -1) {
-				col = '#ff0000';
-			} else if (logLine.indexOf("warn") > -1) {
-				col = '#ff8800';
-			} else {
-				col = '#000000';
-			}
-			
-			content += '<br><text style="color:' + col + '">' + ' ' + d.data.value.logs[j] + '</text>';
-		}
-	}
-
-	svLogs.html(content);
 }
 
 function svRenderTrList(tree)
@@ -402,6 +375,7 @@ function FlameGraph(node, rawdata, pwidth, pheight, context, options)
 	rect.attr('height', this.fg_svgheight);
 	rect.attr('fill', '#ffffff');
 	rect.on('click', this.detailClose.bind(this));
+	rect.on('dblclick', this.detailClose.bind(this));
 
 	/* Configure the partition layout. */
 	this.fg_part = d3.layout.partition();
@@ -463,7 +437,8 @@ function FlameGraph(node, rawdata, pwidth, pheight, context, options)
 	    attr('height', this.fg_height).
 	    attr('width', this.fg_rectwidth).
 	    attr('fill', this.fg_color).
-	    on('click', this.detailOpen.bind(this)).
+	    on('click', this.showLogs.bind(this)).
+	    on('dblclick', this.detailOpen.bind(this)).
 	    on('mouseover', this.mouseover.bind(this)).
 	    on('mouseout', this.mouseout.bind(this));
 	this.fg_clips = this.fg_svg.selectAll('clipPath').data(data).
@@ -484,7 +459,8 @@ function FlameGraph(node, rawdata, pwidth, pheight, context, options)
 	    attr('clip-path', function (d) {
 		return ('url("#' + nodeid(d) + '")');
 	    }).
-	    on('click', this.detailOpen.bind(this)).
+	    on('click', this.showLogs.bind(this)).
+	    on('dblclick', this.detailOpen.bind(this)).
 	    on('mouseover', this.mouseover.bind(this)).
 	    on('mouseout', this.mouseout.bind(this)).
 	    text(function (d) { return svCreateBarLabel(d); });
@@ -546,6 +522,70 @@ FlameGraph.prototype.detailClose = function ()
 {
 	if (this.fg_context !== null)
 		this.fg_context.detailClose();
+};
+
+function svChildLogsVisibility(show)
+{
+	svShowChildLogs = show;
+	svShowLogs(svLastLogsNode);
+}
+
+function svAddChildLogs(loglist, dv)
+{
+	Array.prototype.push.apply(loglist, dv.logs);
+
+	var childs = dv.ch;
+	for (ch in childs) {
+		svAddChildLogs(loglist, childs[ch]);
+	}
+}
+
+function svShowLogs(d)
+{
+	var loglist;
+	var content = 
+		'<b>Logs for</b> <a href="javascript:svChildLogsVisibility(false)">this span</a> - <a href="javascript:svChildLogsVisibility(true)">this span and childs</a>';
+
+	if (svShowChildLogs === false) {
+		loglist = d.data.value.logs;
+	} else {
+		loglist = [];
+		svAddChildLogs(loglist, d.data.value);
+		loglist.sort(function (a, b) {
+		    if (a.th === b.th) {
+		        return a.tl - b.tl;
+		    } else {
+		        return a.th - b.th;
+		    }
+		});
+		var pippo = 0;
+	}
+		
+	if (loglist) {
+		for (var j = 0; j < loglist.length; j++) {
+			var logLine = loglist[j].b.toLowerCase();
+			var col;
+			
+			if (logLine.indexOf("err") > -1) {
+				col = '#ff0000';
+			} else if (logLine.indexOf("warn") > -1) {
+				col = '#ff8800';
+			} else {
+				col = '#000000';
+			}
+			
+			content += '<br><text style="color:' + col + '"> ' + loglist[j].t + ' ' + loglist[j].b + '</text>';
+		}
+	}
+
+	svLogs.html(content);
+	
+	svLastLogsNode = d;
+}
+
+FlameGraph.prototype.showLogs = function (d)
+{
+	svShowLogs(d);
 };
 
 FlameGraph.prototype.detailOpen = function (d)
