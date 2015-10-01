@@ -530,27 +530,37 @@ function svChildLogsVisibility(show)
 	svShowLogs(svLastLogsNode);
 }
 
-function svAddChildLogs(loglist, dv)
+function svAddChildLogs(loglist, dk, dv, retnow)
 {
-	Array.prototype.push.apply(loglist, dv.logs);
+    if (dv.logs !== undefined) {
+        for (var j = 0; j < dv.logs.length; j++) {
+            dv.logs[j].k = dk;
+            dv.logs[j].d = dv;
+        }
+
+        Array.prototype.push.apply(loglist, dv.logs);
+    }
+
+    if (retnow === true) {
+        return;
+    }
 
 	var childs = dv.ch;
 	for (ch in childs) {
-		svAddChildLogs(loglist, childs[ch]);
+		svAddChildLogs(loglist, ch, childs[ch]);
 	}
 }
 
 function svShowLogs(d)
 {
-	var loglist;
-	var content = 
+	var loglist = [];
+	var content =
 		'<b>Logs for</b> <a href="javascript:svChildLogsVisibility(false)">this span</a> - <a href="javascript:svChildLogsVisibility(true)">this span and childs</a>';
 
 	if (svShowChildLogs === false) {
-		loglist = d.data.value.logs;
+	    svAddChildLogs(loglist, d.data.key, d.data.value, true);
 	} else {
-		loglist = [];
-		svAddChildLogs(loglist, d.data.value);
+		svAddChildLogs(loglist, d.data.key, d.data.value);
 		loglist.sort(function (a, b) {
 		    if (a.th === b.th) {
 		        return a.tl - b.tl;
@@ -558,7 +568,6 @@ function svShowLogs(d)
 		        return a.th - b.th;
 		    }
 		});
-		var pippo = 0;
 	}
 		
 	if (loglist) {
@@ -566,6 +575,9 @@ function svShowLogs(d)
 			var logLine = loglist[j].b.toLowerCase();
 			var col;
 			
+		    //
+		    // Determine the log text color
+            //
 			if (logLine.indexOf("err") > -1) {
 				col = '#ff0000';
 			} else if (logLine.indexOf("warn") > -1) {
@@ -574,7 +586,15 @@ function svShowLogs(d)
 				col = '#000000';
 			}
 			
-			content += '<br><text style="color:' + col + '"> ' + loglist[j].t + ' ' + loglist[j].b + '</text>';
+		    //
+		    // Determine the container color
+            //
+			var cName = loglist[j].d.cont;
+			var contCol = svColorMono(cName);
+
+			content += '<br>' +
+                '<text style="color:' + contCol + '"> ' + cName + '</text> ' +
+                '<text style="color:' + col + '"> (' + loglist[j].k + ') ' + loglist[j].t + ' ' + loglist[j].b + '</text>';
 		}
 	}
 
