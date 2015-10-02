@@ -555,7 +555,7 @@ function svShowLogs(d)
 {
 	var loglist = [];
 	var content =
-		'<b>Logs for</b> <a href="javascript:svChildLogsVisibility(false)">this span</a> - <a href="javascript:svChildLogsVisibility(true)">this span and childs</a>';
+		'<b>Logs for</b> <a href="javascript:svChildLogsVisibility(false)">this span only</a> - <a href="javascript:svChildLogsVisibility(true)">this span and childs</a>';
 
 	if (svShowChildLogs === false) {
 	    svAddChildLogs(loglist, d.data.key, d.data.value, true);
